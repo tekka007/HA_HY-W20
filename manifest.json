@@ -1,0 +1,12 @@
+{
+  "domain": "heyitech_alarm",
+  "name": "Heyitech Alarm (Unofficial)",
+  "version": "0.1.2",
+  "documentation": "https://example.invalid/heyitech",
+  "requirements": [],
+  "codeowners": ["@you"],
+  "iot_class": "cloud_polling",
+  "integration_type": "hub",
+  "config_flow": true,
+  "loggers": ["custom_components.heyitech_alarm"]
+}

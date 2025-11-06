@@ -1,0 +1,32 @@
+{
+  "title": "Heyitech Alarm (Unofficial)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Heyitech Cloud",
+        "description": "Enter cloud base URL, credentials, and device ID.",
+        "data": {
+          "base_url": "Base URL (e.g. https://cloudde.heyitech.com:8038/hysoft)",
+          "username": "Username",
+          "password": "Password",
+          "device_id": "Device ID",
+          "api_timezone": "API Timezone (e.g. +01:00)",
+          "language_type": "Language Type (e.g. 0001)",
+          "terminal_type": "Terminal Type (e.g. 0)",
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Update polling interval.",
+        "data": {
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  }
+}
