@@ -27,7 +27,7 @@ from .coordinator import HeyitechCoordinator
 
 
 def _map_value_to_state(val: int) -> str:
-    # 0 = disarmed, 1 = armed (mapped to armed_away), 2 = home armed (mapped to armed_home)
+    # 0 = disarmed, 1 = armed, 2 = home armed
     if val == LEVEL_DISARMED:
         return AlarmControlPanelState.DISARMED
     if val == LEVEL_ARMED:

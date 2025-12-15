@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import timedelta
 import importlib
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -6,6 +7,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, PLATFORMS
 from .coordinator import HeyitechCoordinator
+from .const import CONF_UPDATE_INTERVAL
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType):
@@ -40,8 +42,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def _updated(hass: HomeAssistant, entry: ConfigEntry):
-    """Handle updated config entry options."""
     coord = hass.data[DOMAIN][entry.entry_id]
+    interval = entry.options.get(CONF_UPDATE_INTERVAL, coord.update_interval.total_seconds())
+    coord.update_interval = timedelta(seconds=int(interval))
     await coord.async_request_refresh()
 
 

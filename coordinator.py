@@ -8,9 +8,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
-    DEFAULT_UPDATE_INTERVAL,
     CONF_USERNAME, CONF_PASSWORD, CONF_BASE_URL, CONF_DEVICE_ID,
-    CONF_TIMEZONE, CONF_LANG, CONF_TERMINAL, CONF_UPDATE_INTERVAL,
+    CONF_TIMEZONE, CONF_LANG, CONF_TERMINAL,
 )
 from .api import HeyitechClient, HeyitechApiError
 from .const import DEFAULT_LANG, DEFAULT_TERMINAL, DEFAULT_TZ
@@ -57,9 +56,3 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             )
         except HeyitechApiError as err:
             raise UpdateFailed(str(err)) from err
-
-    async def _updated(hass, entry):
-        coord = hass.data[DOMAIN][entry.entry_id]
-        interval = entry.options.get(CONF_UPDATE_INTERVAL, coord.update_interval.total_seconds())
-        coord.update_interval = timedelta(seconds=int(interval))
-        await coord.async_request_refresh()
