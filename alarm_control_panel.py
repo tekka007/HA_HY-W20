@@ -6,6 +6,7 @@ import voluptuous as vol
 from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
     AlarmControlPanelEntityFeature,
+    AlarmControlPanelState,
 )
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.config_entries import ConfigEntry
@@ -28,11 +29,11 @@ from .coordinator import HeyitechCoordinator
 def _map_value_to_state(val: int) -> str:
     # 0 = disarmed, 1 = armed (mapped to armed_away), 2 = home armed (mapped to armed_home)
     if val == LEVEL_DISARMED:
-        return "disarmed"
+        return AlarmControlPanelState.DISARMED
     if val == LEVEL_ARMED:
-        return "armed_away"
+        return AlarmControlPanelState.ARMED_AWAY
     if val == LEVEL_HOME:
-        return "armed_home"
+        return AlarmControlPanelState.ARMED_HOME
     return STATE_UNKNOWN
 
 

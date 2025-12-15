@@ -18,6 +18,7 @@ DEFAULT_TZ = "+01:00"
 DEFAULT_UPDATE_INTERVAL = 30
 
 # API paths
+CONF_CLOUD_DEFAULT = "https://cloudde.heyitech.com:8038/hysoft"
 LOGIN_PATH = "/puserlogin.shtml"
 GET_ARM_STATUS_PATH = "/pdevgetArmStatus.shtml"
 REMOTE_CONTROL_PATH = "/pdevremoteControl.shtml"

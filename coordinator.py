@@ -13,6 +13,9 @@ from .const import (
     CONF_TIMEZONE, CONF_LANG, CONF_TERMINAL, CONF_UPDATE_INTERVAL,
 )
 from .api import HeyitechClient, HeyitechApiError
+from .const import DEFAULT_LANG, DEFAULT_TERMINAL, DEFAULT_TZ
+from .const import DEFAULT_UPDATE_INTERVAL, CONF_UPDATE_INTERVAL
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,9 +29,9 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         self.password = cfg[CONF_PASSWORD]
         self.base_url = cfg[CONF_BASE_URL]
         self.device_id = cfg[CONF_DEVICE_ID]
-        self.lang = cfg.get(CONF_LANG)
-        self.terminal = cfg.get(CONF_TERMINAL)
-        self.tz = cfg.get(CONF_TIMEZONE)
+        self.lang = cfg.get(CONF_LANG, DEFAULT_LANG)
+        self.terminal = cfg.get(CONF_TERMINAL, DEFAULT_TERMINAL)
+        self.tz = cfg.get(CONF_TIMEZONE, DEFAULT_TZ)
         interval = cfg.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
 
         session = async_get_clientsession(hass)
@@ -54,3 +57,9 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             )
         except HeyitechApiError as err:
             raise UpdateFailed(str(err)) from err
+
+    async def _updated(hass, entry):
+        coord = hass.data[DOMAIN][entry.entry_id]
+        interval = entry.options.get(CONF_UPDATE_INTERVAL, coord.update_interval.total_seconds())
+        coord.update_interval = timedelta(seconds=int(interval))
+        await coord.async_request_refresh()

@@ -7,13 +7,10 @@ from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
     DOMAIN,
-    CONF_USERNAME, CONF_PASSWORD, CONF_BASE_URL, CONF_DEVICE_ID,
+    CONF_USERNAME, CONF_PASSWORD, CONF_BASE_URL, CONF_DEVICE_ID, CONF_CLOUD_DEFAULT,
     CONF_TIMEZONE, CONF_LANG, CONF_TERMINAL, CONF_UPDATE_INTERVAL,
     DEFAULT_TZ, DEFAULT_LANG, DEFAULT_TERMINAL, DEFAULT_UPDATE_INTERVAL,
 )
-
-CLOUD_DEFAULT = "https://cloudde.heyitech.com:8038/hysoft"
-
 
 class HeyitechConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
