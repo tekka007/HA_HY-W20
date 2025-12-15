@@ -1,12 +1,12 @@
 {
-  "title": "Heyitech Alarm (Unofficial)",
+  "title": "Heyitech Alarm",
   "config": {
     "step": {
       "user": {
         "title": "Connect to Heyitech Cloud",
         "description": "Enter cloud base URL, credentials, and device ID.",
         "data": {
-          "base_url": "Base URL (e.g. https://cloudde.heyitech.com:8038/hysoft)",
+          "base_url": "Base URL",
           "username": "Username",
           "password": "Password",
           "device_id": "Device ID",

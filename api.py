@@ -59,24 +59,47 @@ class HeyitechClient:
         data = {"requestJson": json.dumps(payload)}
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        _LOGGER.debug("Heyitech login POST %s", url)
         context = "login"
-        try:
-            async with async_timeout.timeout(15):
-                async with self._session.post(url, data=data, headers=headers) as resp:
-                    text = await resp.text()
-                    if resp.status != 200:
-                        raise HeyitechAuthError(f"HTTP {resp.status}: {text}")
-                    body = await resp.json(content_type=None)
-                    self._validate_response(body, context)
-        except asyncio.TimeoutError as err:
-            raise HeyitechApiError(f"Timeout during {context}: {err}") from err
-        except aiohttp.ClientError as err:
-            raise HeyitechApiError(f"Network error during {context}: {err}") from err
-        token = body.get("tokenId")
-        if not token:
-            raise HeyitechAuthError(f"Login succeeded but no tokenId returned: {body}")
-        return token
+        last_error: Exception | None = None
+
+        for attempt in (1, 2):  # first try + one retry
+            try:
+                _LOGGER.debug("Heyitech login POST %s (attempt %s/2)", url, attempt)
+
+                async with async_timeout.timeout(15):
+                    async with self._session.post(url, data=data, headers=headers) as resp:
+                        text = await resp.text()
+                        if resp.status != 200:
+                            raise HeyitechAuthError(f"HTTP {resp.status}: {text}")
+
+                        body = await resp.json(content_type=None)
+                        self._validate_response(body, context)
+
+                        token = body.get("tokenId")
+                        if not token:
+                            raise HeyitechAuthError(
+                                f"Login succeeded but no tokenId returned: {body}"
+                            )
+
+                        return token
+
+            except (asyncio.TimeoutError, aiohttp.ClientError, HeyitechApiError) as err:
+                last_error = err
+
+                if attempt == 1:
+                    _LOGGER.warning(
+                        "Heyitech login failed (attempt %s/2). Retrying once: %s",
+                        attempt,
+                        err,
+                    )
+                    # Yield control before retrying
+                    await asyncio.sleep(0)
+                    continue
+
+                break  # second failure → stop retrying
+
+        raise HeyitechAuthError(f"Login failed after retry: {last_error}")
+
 
     async def get_arm_status(
         self,

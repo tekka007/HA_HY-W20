@@ -69,6 +69,19 @@ class HeyitechAlarmEntity(CoordinatorEntity[HeyitechCoordinator], AlarmControlPa
         self._attr_unique_id = f"{entry.entry_id}_alarm"
 
     @property
+    def icon(self) -> str | None:
+        state = self.state
+
+        if state == AlarmControlPanelState.DISARMED:
+            return "mdi:shield-off"
+        if state == AlarmControlPanelState.ARMED_HOME:
+            return "mdi:shield-home"
+        if state == AlarmControlPanelState.ARMED_AWAY:
+            return "mdi:shield-lock"
+
+        return "mdi:shield-alert"
+
+    @property
     def device_info(self) -> dict[str, Any]:
         """Return device registry information."""
         device_id = self._entry.data.get("device_id")
