@@ -69,6 +69,17 @@ class HeyitechAlarmEntity(CoordinatorEntity[HeyitechCoordinator], AlarmControlPa
         self._attr_unique_id = f"{entry.entry_id}_alarm"
 
     @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device registry information."""
+        device_id = self._entry.data.get("device_id")
+        return {
+            "identifiers": {(DOMAIN, str(device_id))},
+            "name": f"Heyitech Alarm {device_id}",
+            "manufacturer": "Heyitech",
+            "model": "Alarm Panel",
+        }
+
+    @property
     def code_format(self):
         # Returning None tells HA that no code is used at all
         return None
