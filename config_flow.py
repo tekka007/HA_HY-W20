@@ -22,7 +22,7 @@ class HeyitechConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="Heyitech Alarm", data=user_input)
 
         schema = vol.Schema({
-            vol.Required(CONF_BASE_URL, default=CLOUD_DEFAULT): str,
+            vol.Required(CONF_BASE_URL, default=CONF_CLOUD_DEFAULT): str,
             vol.Required(CONF_USERNAME): str,
             vol.Required(CONF_PASSWORD): str,
             vol.Required(CONF_DEVICE_ID): str,
