@@ -1,0 +1,13 @@
+# Service definitions for HeyiTech Alarm integration
+
+arm_away:
+  name: Arm Away
+  description: Arms the alarm system in away mode.
+
+arm_home:
+  name: Arm Home
+  description: Arms the alarm system in home mode.
+
+disarm:
+  name: Disarm
+  description: Disarms the alarm system.
