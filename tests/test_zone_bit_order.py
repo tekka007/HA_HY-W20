@@ -96,8 +96,15 @@ api = _load_module("custom_components.heyitech_alarm.api", PACKAGE_ROOT / "api.p
 coordinator = _load_module("custom_components.heyitech_alarm.coordinator", PACKAGE_ROOT / "coordinator.py")
 
 
-def test_device_state_bitarray_uses_zone_position_order():
+def test_device_state_byte_array_uses_zone_position_order():
     assert coordinator._decode_bit_array("10110") == {
+        "1": True,
+        "2": False,
+        "3": True,
+        "4": True,
+        "5": False,
+    }
+    assert coordinator._decode_bit_array([1, 0, 1, 1, 0]) == {
         "1": True,
         "2": False,
         "3": True,

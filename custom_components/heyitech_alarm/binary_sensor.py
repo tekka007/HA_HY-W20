@@ -80,7 +80,7 @@ class HeyitechZoneOpenBinarySensor(_HeyitechZoneBinaryBase):
 
     @property
     def is_on(self) -> bool | None:
-        # deviceState bit = True means sensor open.
+        # deviceState byte = True means sensor open for that zone.
         return self._bit_map_bool("device_state_map")
 
     @property
@@ -90,7 +90,7 @@ class HeyitechZoneOpenBinarySensor(_HeyitechZoneBinaryBase):
             "zone_id": self._zone_id,
             "zone_reference": self._zone_reference(),
             "state": None if state is None else ("open" if state else "closed"),
-            "source": "deviceState bit array",
+            "source": "deviceState byte array",
         }
 
 
@@ -108,7 +108,7 @@ class HeyitechZoneAlarmCauseBinarySensor(_HeyitechZoneBinaryBase):
 
     @property
     def is_on(self) -> bool | None:
-        # alarmState bit = True means this zone is marked as an alarm source.
+        # alarmState byte = True means this zone is marked as an alarm source.
         return self._bit_map_bool("alarm_state_map")
 
     @property
@@ -118,5 +118,5 @@ class HeyitechZoneAlarmCauseBinarySensor(_HeyitechZoneBinaryBase):
             "zone_id": self._zone_id,
             "zone_reference": self._zone_reference(),
             "state": None if state is None else ("alarm_source" if state else "normal"),
-            "source": "alarmState bit array",
+            "source": "alarmState byte array",
         }

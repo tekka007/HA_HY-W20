@@ -26,14 +26,18 @@ def _parse_state_types(value: str) -> list[str]:
 
 
 def _decode_bit_array(bit_string: Any) -> dict[str, bool]:
+    if isinstance(bit_string, (list, tuple, bytes, bytearray)):
+        return {str(idx): bool(value) for idx, value in enumerate(bit_string, start=1)}
+
     if not isinstance(bit_string, str):
         return {}
+
     bits = bit_string.strip()
     if not bits or any(ch not in {"0", "1"} for ch in bits):
         return {}
-    # The panel uses positional zone mapping: bit 0 is zone 1, bit 1 is zone 2,
-    # and so on. The bare bit array is not reversed or treated as a little-endian
-    # value, so we map the array positions directly to zone IDs.
+    # The panel sends a positional zone byte-array: array[0] = zone 1,
+    # array[1] = zone 2, and so on. We map each element directly to the zone ID,
+    # without reversing or treating the payload as a little-endian bitfield.
     return {str(idx): (ch == "1") for idx, ch in enumerate(bits, start=1)}
 
 
