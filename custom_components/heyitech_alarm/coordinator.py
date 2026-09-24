@@ -31,7 +31,9 @@ def _decode_bit_array(bit_string: Any) -> dict[str, bool]:
     bits = bit_string.strip()
     if not bits or any(ch not in {"0", "1"} for ch in bits):
         return {}
-    return {str(idx + 1): (ch == "1") for idx, ch in enumerate(bits)}
+    # Bit position mapping: stateID "1" refers to position 1 of the bitfield
+    # (rightmost/least-significant bit), stateID "2" to the next bit, etc.
+    return {str(idx + 1): (ch == "1") for idx, ch in enumerate(reversed(bits))}
 
 
 def _zone_reference_label(entry: dict[str, Any], fallback: str) -> str:
