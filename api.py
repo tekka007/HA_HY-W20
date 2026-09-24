@@ -1,13 +1,19 @@
 from __future__ import annotations
+
 import asyncio
 import json
 import logging
 from typing import Any, Dict
 
 import aiohttp
-import async_timeout
 
-from .const import LOGIN_PATH, GET_ARM_STATUS_PATH, REMOTE_CONTROL_PATH
+from .const import (
+    FIND_DEVICE_LIST_PATH,
+    GET_TERMINAL_STATUS_PATH,
+    GET_ARM_STATUS_PATH,
+    LOGIN_PATH,
+    REMOTE_CONTROL_PATH,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +32,7 @@ class HeyitechClient:
     def __init__(self, session: aiohttp.ClientSession, base_url: str) -> None:
         self._session = session
         self._base = base_url.rstrip("/")
+
     @staticmethod
     def _validate_response(body: Any, context: str) -> None:
         """Raise HeyitechApiError when the API body clearly indicates failure."""
@@ -35,7 +42,7 @@ class HeyitechClient:
         if body.get("success") is False:
             raise HeyitechApiError(f"{context} failed: {body.get('msg') or body.get('message') or body}")
 
-        for key in ("code", "resultCode", "ret", "status"):
+        for key in ("code", "resultCode", "ret", "status", "statusCode"):
             if key not in body:
                 continue
             val = body.get(key)
@@ -66,7 +73,7 @@ class HeyitechClient:
             try:
                 _LOGGER.debug("Heyitech login POST %s (attempt %s/2)", url, attempt)
 
-                async with async_timeout.timeout(15):
+                async with asyncio.timeout(15):
                     async with self._session.post(url, data=data, headers=headers) as resp:
                         text = await resp.text()
                         if resp.status != 200:
@@ -96,10 +103,9 @@ class HeyitechClient:
                     await asyncio.sleep(0)
                     continue
 
-                break  # second failure → stop retrying
+                break  # second failure -> stop retrying
 
         raise HeyitechAuthError(f"Login failed after retry: {last_error}")
-
 
     async def get_arm_status(
         self,
@@ -120,7 +126,82 @@ class HeyitechClient:
         _LOGGER.debug("Heyitech get_arm_status POST %s (device %s)", url, device_id)
         context = "get_arm_status"
         try:
-            async with async_timeout.timeout(15):
+            async with asyncio.timeout(15):
+                async with self._session.post(url, data=data, headers=headers) as resp:
+                    text = await resp.text()
+                    if resp.status != 200:
+                        raise HeyitechApiError(f"HTTP {resp.status}: {text}")
+                    body = await resp.json(content_type=None)
+                    self._validate_response(body, context)
+                    return body
+        except asyncio.TimeoutError as err:
+            raise HeyitechApiError(f"Timeout during {context}: {err}") from err
+        except aiohttp.ClientError as err:
+            raise HeyitechApiError(f"Network error during {context}: {err}") from err
+
+    async def find_device_list(
+        self,
+        username: str,
+        password: str,
+        terminal: str,
+        lang: str,
+        tz: str,
+        num_per_page: int = 50,
+        page_num: int = 1,
+    ) -> Dict[str, Any]:
+        token = await self._login(username, password, terminal, lang, tz)
+
+        url = f"{self._base}{FIND_DEVICE_LIST_PATH}"
+        req = {
+            "tokenId": token,
+            "numPerPage": str(num_per_page),
+            "pageNum": str(page_num),
+        }
+        data = {"requestJson": json.dumps(req)}
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        _LOGGER.debug("Heyitech find_device_list POST %s", url)
+        context = "find_device_list"
+        try:
+            async with asyncio.timeout(15):
+                async with self._session.post(url, data=data, headers=headers) as resp:
+                    text = await resp.text()
+                    if resp.status != 200:
+                        raise HeyitechApiError(f"HTTP {resp.status}: {text}")
+                    body = await resp.json(content_type=None)
+                    self._validate_response(body, context)
+                    return body
+        except asyncio.TimeoutError as err:
+            raise HeyitechApiError(f"Timeout during {context}: {err}") from err
+        except aiohttp.ClientError as err:
+            raise HeyitechApiError(f"Network error during {context}: {err}") from err
+
+    async def get_terminal_status(
+        self,
+        username: str,
+        password: str,
+        terminal: str,
+        lang: str,
+        tz: str,
+        device_id: str,
+        state_types: list[str] | None = None,
+    ) -> Dict[str, Any]:
+        token = await self._login(username, password, terminal, lang, tz)
+
+        url = f"{self._base}{GET_TERMINAL_STATUS_PATH}"
+        state_list = [{"stateType": st} for st in (state_types or ["3"])]
+        req = {
+            "tokenId": token,
+            "stateList": state_list,
+            "deviceID": device_id,
+        }
+        data = {"requestJson": json.dumps(req)}
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        _LOGGER.debug("Heyitech get_terminal_status POST %s (device %s)", url, device_id)
+        context = "get_terminal_status"
+        try:
+            async with asyncio.timeout(15):
                 async with self._session.post(url, data=data, headers=headers) as resp:
                     text = await resp.text()
                     if resp.status != 200:
@@ -162,7 +243,7 @@ class HeyitechClient:
         )
         context = "remote_control"
         try:
-            async with async_timeout.timeout(15):
+            async with asyncio.timeout(15):
                 async with self._session.post(url, data=data, headers=headers) as resp:
                     text = await resp.text()
                     if resp.status != 200:

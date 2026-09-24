@@ -13,6 +13,7 @@
           "api_timezone": "API Timezone (e.g. +01:00)",
           "language_type": "Language Type (e.g. 0001)",
           "terminal_type": "Terminal Type (e.g. 0)",
+          "terminal_state_types": "Terminal state types (comma-separated, e.g. 3)",
           "update_interval": "Update interval (seconds)"
         }
       }
@@ -22,8 +23,9 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "Update polling interval.",
+        "description": "Update polling and terminal state settings.",
         "data": {
+          "terminal_state_types": "Terminal state types (comma-separated)",
           "update_interval": "Update interval (seconds)"
         }
       }

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import voluptuous as vol
 from homeassistant.components.alarm_control_panel import (
@@ -38,7 +38,7 @@ def _map_value_to_state(val: int) -> str:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
-    coord: HeyitechCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coord: HeyitechCoordinator = entry.runtime_data
     ent = HeyitechAlarmEntity(coord, entry)
     async_add_entities([ent], True)
 
@@ -70,7 +70,7 @@ class HeyitechAlarmEntity(CoordinatorEntity[HeyitechCoordinator], AlarmControlPa
 
     @property
     def icon(self) -> str | None:
-        state = self.state
+        state = self.alarm_state
 
         if state == AlarmControlPanelState.DISARMED:
             return "mdi:shield-off"
@@ -98,20 +98,36 @@ class HeyitechAlarmEntity(CoordinatorEntity[HeyitechCoordinator], AlarmControlPa
         return None
 
     @property
-    def state(self) -> Optional[str]:
-        d: Dict[str, Any] = self.coordinator.data or {}
+    def alarm_state(self) -> AlarmControlPanelState | None:
+        d = self.coordinator.data or {}
+        raw_level = d.get("value")
+        if raw_level is None:
+            return None
+
         try:
-            level = int(d.get("value"))
+            level = int(raw_level)
         except Exception:
-            return STATE_UNKNOWN
-        return _map_value_to_state(level)
+            return None
+
+        mapped = _map_value_to_state(level)
+        if mapped == STATE_UNKNOWN:
+            return None
+        return mapped
 
     @property
-    def extra_state_attributes(self) -> Dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, Any]:
         d = self.coordinator.data or {}
         return {
             "device_id": self._entry.data.get("device_id"),
             "arm_level_raw": d.get("value"),
+            "alarm_state_bits": d.get("alarm_state_bits"),
+            "alarm_state_map": d.get("alarm_state_map"),
+            "device_state_bits": d.get("device_state_bits"),
+            "device_state_map": d.get("device_state_map"),
+            "zone_state_list": d.get("zone_state_list"),
+            "zone_state_map": d.get("zone_state_map"),
+            "terminal_status": d.get("terminal_status"),
+            "status_source": d.get("source", "pdevgetArmStatus"),
             "raw": d,
         }
 

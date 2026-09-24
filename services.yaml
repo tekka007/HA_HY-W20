@@ -1,13 +1,23 @@
-# Service definitions for HeyiTech Alarm integration
-
-arm_away:
-  name: Arm Away
-  description: Arms the alarm system in away mode.
-
-arm_home:
-  name: Arm Home
-  description: Arms the alarm system in home mode.
-
-disarm:
-  name: Disarm
-  description: Disarms the alarm system.
+set_raw_state:
+  name: Set Raw State
+  description: >-
+    Sends a raw control command to the selected alarm entity.
+    Use with caution, values map directly to cloud controlType values.
+  target:
+    entity:
+      domain: alarm_control_panel
+      integration: heyitech_alarm
+  fields:
+    state:
+      name: State
+      description: Raw control value to send.
+      required: true
+      selector:
+        select:
+          options:
+            - label: Arm away (1)
+              value: 1
+            - label: Arm home (2)
+              value: 2
+            - label: Disarm (3)
+              value: 3
