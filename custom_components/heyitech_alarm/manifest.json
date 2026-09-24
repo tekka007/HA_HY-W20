@@ -1,10 +1,10 @@
 {
   "domain": "heyitech_alarm",
   "name": "Heyitech Alarm (Unofficial)",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "documentation": "https://www.heyitech.com/HY-Wtwenty_p25",
   "requirements": [],
-  "codeowners": ["@tekka"],
+  "codeowners": ["@tekka007"],
   "iot_class": "cloud_polling",
   "integration_type": "hub",
   "config_flow": true,

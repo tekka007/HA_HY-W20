@@ -2,7 +2,7 @@
   "name": "Heyitech Alarm (Unofficial)",
   "content_in_root": false,
   "country": [
-    "DE"
+    "CH"
   ],
   "homeassistant": "2025.1.0",
   "render_readme": true
