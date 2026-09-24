@@ -25,7 +25,8 @@ def _normalize_state_types(value: str) -> str:
         return DEFAULT_TERMINAL_STATE_TYPES
     return ",".join(chunks)
 
-class HeyitechConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+@config_entries.HANDLERS.register(DOMAIN)
+class HeyitechConfigFlow(config_entries.ConfigFlow):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
