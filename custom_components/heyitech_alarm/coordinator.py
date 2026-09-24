@@ -34,6 +34,17 @@ def _decode_bit_array(bit_string: Any) -> dict[str, bool]:
     return {f"zone_{idx + 1}": (ch == "1") for idx, ch in enumerate(bits)}
 
 
+def _zone_reference_label(entry: dict[str, Any], fallback: str) -> str:
+    for key in ("zoneRef", "zoneNO", "zoneName", "name", "stateName"):
+        value = entry.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return fallback
+
+
 class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
     """Coordinator handling periodic updates from Heyitech cloud."""
 
@@ -152,6 +163,11 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             status["zone_state_list"] = zone_state_list
             status["zone_state_map"] = {
                 str(item.get("stateID")): item.get("stateValue")
+                for item in zone_state_list
+                if isinstance(item, dict) and item.get("stateID") is not None
+            }
+            status["zone_reference_map"] = {
+                str(item.get("stateID")): _zone_reference_label(item, str(item.get("stateID")))
                 for item in zone_state_list
                 if isinstance(item, dict) and item.get("stateID") is not None
             }

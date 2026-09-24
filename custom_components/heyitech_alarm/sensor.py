@@ -27,9 +27,23 @@ class HeyitechZoneStateSensor(CoordinatorEntity[HeyitechCoordinator], SensorEnti
         super().__init__(coordinator)
         self._entry = entry
         self._zone_id = zone_id
-        self._attr_name = f"Zone {zone_id}"
         self._attr_unique_id = f"{entry.entry_id}_zone_{zone_id}_state"
         self._attr_icon = "mdi:shield-home"
+
+    def _zone_reference(self) -> str:
+        data = self.coordinator.data or {}
+        reference_map = data.get("zone_reference_map")
+        if isinstance(reference_map, dict):
+            value = reference_map.get(str(self._zone_id))
+            if value is not None:
+                text = str(value).strip()
+                if text:
+                    return text
+        return str(self._zone_id)
+
+    @property
+    def name(self) -> str:
+        return f"Zone {self._zone_reference()}"
 
     @property
     def native_value(self) -> int | None:
@@ -51,6 +65,7 @@ class HeyitechZoneStateSensor(CoordinatorEntity[HeyitechCoordinator], SensorEnti
     def extra_state_attributes(self) -> dict[str, Any]:
         return {
             "zone_id": self._zone_id,
+            "zone_reference": self._zone_reference(),
             "raw_value": None if self.native_value is None else str(self.native_value),
             "source": "pdevgetTerminalStatus.zoneStateList",
         }

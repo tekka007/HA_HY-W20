@@ -29,9 +29,23 @@ class HeyitechZoneTriggeredBinarySensor(CoordinatorEntity[HeyitechCoordinator], 
         super().__init__(coordinator)
         self._entry = entry
         self._zone_id = zone_id
-        self._attr_name = f"Zone {zone_id} Triggered"
         self._attr_unique_id = f"{entry.entry_id}_zone_{zone_id}_triggered"
         self._attr_icon = "mdi:alert-circle"
+
+    def _zone_reference(self) -> str:
+        data = self.coordinator.data or {}
+        reference_map = data.get("zone_reference_map")
+        if isinstance(reference_map, dict):
+            value = reference_map.get(str(self._zone_id))
+            if value is not None:
+                text = str(value).strip()
+                if text:
+                    return text
+        return str(self._zone_id)
+
+    @property
+    def name(self) -> str:
+        return f"Zone {self._zone_reference()} Triggered"
 
     def _raw_value(self) -> int | None:
         data = self.coordinator.data or {}
@@ -60,6 +74,7 @@ class HeyitechZoneTriggeredBinarySensor(CoordinatorEntity[HeyitechCoordinator], 
         raw = self._raw_value()
         return {
             "zone_id": self._zone_id,
+            "zone_reference": self._zone_reference(),
             "raw_value": None if raw is None else str(raw),
             "normal_value": str(_NORMAL_ZONE_VALUE),
             "source": "pdevgetTerminalStatus.zoneStateList",
