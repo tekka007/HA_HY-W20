@@ -31,7 +31,7 @@ def _decode_bit_array(bit_string: Any) -> dict[str, bool]:
     bits = bit_string.strip()
     if not bits or any(ch not in {"0", "1"} for ch in bits):
         return {}
-    return {f"zone_{idx + 1}": (ch == "1") for idx, ch in enumerate(bits)}
+    return {str(idx + 1): (ch == "1") for idx, ch in enumerate(bits)}
 
 
 def _zone_reference_label(entry: dict[str, Any], fallback: str) -> str:
@@ -64,6 +64,8 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
 
         session = async_get_clientsession(hass)
         self.client = HeyitechClient(session, self.base_url)
+        self.zone_reference_map: dict[str, str] = {}
+        self._zone_info_attempted = False
 
         super().__init__(
             hass,
@@ -72,8 +74,50 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             update_interval=timedelta(seconds=interval),
         )
 
+    async def async_load_zone_info_once(self) -> None:
+        """Load zone reference names once during startup."""
+        if self._zone_info_attempted:
+            return
+
+        self._zone_info_attempted = True
+        try:
+            payload = await self.client.get_zone_name_list(
+                self.username,
+                self.password,
+                self.terminal,
+                self.lang,
+                self.tz,
+                self.device_id,
+            )
+        except HeyitechApiError as err:
+            _LOGGER.debug("get_zone_name_list failed for device %s: %s", self.device_id, err)
+            return
+
+        value = payload.get("value")
+        if not isinstance(value, list):
+            return
+
+        resolved: dict[str, str] = {}
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            zone_id = item.get("id")
+            if zone_id is None:
+                continue
+            label = item.get("zn")
+            if label is None:
+                continue
+            text = str(label).strip()
+            if not text:
+                continue
+            resolved[str(zone_id)] = text
+
+        self.zone_reference_map = resolved
+
     async def _async_update_data(self) -> Dict[str, Any]:
         """Fetch latest status from Heyitech API."""
+        await self.async_load_zone_info_once()
+
         try:
             status = await self.client.get_arm_status(
                 self.username,
@@ -166,13 +210,21 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
                 for item in zone_state_list
                 if isinstance(item, dict) and item.get("stateID") is not None
             }
-            status["zone_reference_map"] = {
+            fallback_reference_map = {
                 str(item.get("stateID")): _zone_reference_label(item, str(item.get("stateID")))
                 for item in zone_state_list
                 if isinstance(item, dict) and item.get("stateID") is not None
             }
+            # Prefer explicit zone-name list labels; fall back to terminal status labels.
+            status["zone_reference_map"] = {
+                key: self.zone_reference_map.get(key, fallback_reference_map.get(key, key))
+                for key in set(self.zone_reference_map) | set(fallback_reference_map)
+            }
 
         status["terminal_status"] = value
+
+        if "zone_reference_map" not in status and self.zone_reference_map:
+            status["zone_reference_map"] = dict(self.zone_reference_map)
 
     async def _enrich_with_device_snapshot(self, status: Dict[str, Any]) -> None:
         """Attach device snapshot and decode bitfield state maps when available."""
@@ -211,3 +263,6 @@ class HeyitechCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         if isinstance(device_state_bits, str):
             status["device_state_bits"] = device_state_bits
             status["device_state_map"] = _decode_bit_array(device_state_bits)
+
+        if self.zone_reference_map:
+            status["zone_reference_map"] = dict(self.zone_reference_map)

@@ -126,6 +126,7 @@ class HeyitechAlarmEntity(CoordinatorEntity[HeyitechCoordinator], AlarmControlPa
             "device_state_map": d.get("device_state_map"),
             "zone_state_list": d.get("zone_state_list"),
             "zone_state_map": d.get("zone_state_map"),
+            "zone_reference_map": d.get("zone_reference_map"),
             "terminal_status": d.get("terminal_status"),
             "status_source": d.get("source", "pdevgetArmStatus"),
             "raw": d,

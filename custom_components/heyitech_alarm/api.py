@@ -10,6 +10,7 @@ import aiohttp
 from .const import (
     FIND_DEVICE_LIST_PATH,
     GET_TERMINAL_STATUS_PATH,
+    GET_ZONE_NAME_LIST_PATH,
     GET_ARM_STATUS_PATH,
     LOGIN_PATH,
     REMOTE_CONTROL_PATH,
@@ -200,6 +201,41 @@ class HeyitechClient:
 
         _LOGGER.debug("Heyitech get_terminal_status POST %s (device %s)", url, device_id)
         context = "get_terminal_status"
+        try:
+            async with asyncio.timeout(15):
+                async with self._session.post(url, data=data, headers=headers) as resp:
+                    text = await resp.text()
+                    if resp.status != 200:
+                        raise HeyitechApiError(f"HTTP {resp.status}: {text}")
+                    body = await resp.json(content_type=None)
+                    self._validate_response(body, context)
+                    return body
+        except asyncio.TimeoutError as err:
+            raise HeyitechApiError(f"Timeout during {context}: {err}") from err
+        except aiohttp.ClientError as err:
+            raise HeyitechApiError(f"Network error during {context}: {err}") from err
+
+    async def get_zone_name_list(
+        self,
+        username: str,
+        password: str,
+        terminal: str,
+        lang: str,
+        tz: str,
+        device_id: str,
+    ) -> Dict[str, Any]:
+        token = await self._login(username, password, terminal, lang, tz)
+
+        url = f"{self._base}{GET_ZONE_NAME_LIST_PATH}"
+        req = {
+            "tokenId": token,
+            "deviceID": device_id,
+        }
+        data = {"requestJson": json.dumps(req)}
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        _LOGGER.debug("Heyitech get_zone_name_list POST %s (device %s)", url, device_id)
+        context = "get_zone_name_list"
         try:
             async with asyncio.timeout(15):
                 async with self._session.post(url, data=data, headers=headers) as resp:

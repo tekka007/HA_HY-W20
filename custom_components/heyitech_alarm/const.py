@@ -26,6 +26,7 @@ GET_ARM_STATUS_PATH = "/pdevgetArmStatus.shtml"
 REMOTE_CONTROL_PATH = "/pdevremoteControl.shtml"
 FIND_DEVICE_LIST_PATH = "/pdevfindDeviceList.shtml"
 GET_TERMINAL_STATUS_PATH = "/pdevgetTerminalStatus.shtml"
+GET_ZONE_NAME_LIST_PATH = "/pdevgetZoneNameList.shtml"
 
 # Heyitech raw levels (status readback)
 LEVEL_DISARMED = 0

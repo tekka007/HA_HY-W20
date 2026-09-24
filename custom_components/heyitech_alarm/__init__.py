@@ -20,6 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up a Heyitech Alarm entry from config flow."""
     # Build the coordinator and fetch initial data.
     coord = HeyitechCoordinator(hass, entry.data | entry.options)
+    await coord.async_load_zone_info_once()
     await coord.async_config_entry_first_refresh()
     entry.runtime_data = coord
 
