@@ -32,12 +32,15 @@ class HeyitechConfigFlow(config_entries.ConfigFlow):
     async def async_step_user(self, user_input=None):
         if user_input is not None:
             user_input[CONF_BASE_URL] = _normalize_base_url(user_input[CONF_BASE_URL])
+            user_input[CONF_TERMINAL_STATE_TYPES] = _normalize_state_types(
+                str(user_input.get(CONF_TERMINAL_STATE_TYPES, DEFAULT_TERMINAL_STATE_TYPES))
+            )
             await self.async_set_unique_id(user_input[CONF_BASE_URL])
             self._abort_if_unique_id_configured()
             return self.async_create_entry(title="Heyitech Alarm", data=user_input)
 
         schema = vol.Schema({
-            vol.Required(CONF_BASE_URL, default=CONF_CLOUD_DEFAULT): vol.All(str, _normalize_base_url),
+            vol.Required(CONF_BASE_URL, default=CONF_CLOUD_DEFAULT): str,
             vol.Required(CONF_USERNAME): vol.All(str, vol.Length(min=1)),
             vol.Required(CONF_PASSWORD): vol.All(str, vol.Length(min=1)),
             vol.Required(CONF_DEVICE_ID): vol.All(str, vol.Length(min=1)),
@@ -47,7 +50,7 @@ class HeyitechConfigFlow(config_entries.ConfigFlow):
             vol.Optional(
                 CONF_TERMINAL_STATE_TYPES,
                 default=DEFAULT_TERMINAL_STATE_TYPES,
-            ): vol.All(str, _normalize_state_types),
+            ): str,
             vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): POLL_INTERVAL_VALIDATOR,
         })
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -64,6 +67,9 @@ class HeyitechOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         if user_input is not None:
+            user_input[CONF_TERMINAL_STATE_TYPES] = _normalize_state_types(
+                str(user_input.get(CONF_TERMINAL_STATE_TYPES, DEFAULT_TERMINAL_STATE_TYPES))
+            )
             return self.async_create_entry(title="", data=user_input)
 
         opts = self._entry.options
@@ -75,6 +81,6 @@ class HeyitechOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(
                 CONF_TERMINAL_STATE_TYPES,
                 default=opts.get(CONF_TERMINAL_STATE_TYPES, self._entry.data.get(CONF_TERMINAL_STATE_TYPES, DEFAULT_TERMINAL_STATE_TYPES)),
-            ): vol.All(str, _normalize_state_types),
+            ): str,
         })
         return self.async_show_form(step_id="init", data_schema=schema)
