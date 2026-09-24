@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, PLATFORMS
 from .const import CONF_TERMINAL_STATE_TYPES, CONF_UPDATE_INTERVAL, DEFAULT_TERMINAL_STATE_TYPES
 from .coordinator import HeyitechCoordinator
 
 
-async def async_setup(hass: HomeAssistant, config: ConfigType):
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]):
     """Set up integration via configuration.yaml (legacy, unused)."""
     return True
 

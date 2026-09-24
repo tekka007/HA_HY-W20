@@ -3,7 +3,6 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
     DOMAIN,
@@ -29,7 +28,7 @@ def _normalize_state_types(value: str) -> str:
 class HeyitechConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
-    async def async_step_user(self, user_input=None) -> FlowResult:
+    async def async_step_user(self, user_input=None):
         if user_input is not None:
             user_input[CONF_BASE_URL] = _normalize_base_url(user_input[CONF_BASE_URL])
             await self.async_set_unique_id(user_input[CONF_BASE_URL])
